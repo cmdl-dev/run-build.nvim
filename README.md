@@ -1,31 +1,28 @@
 # run-build.nvim
 
-A lightweight Neovim plugin to manage, execute, and navigate build commands with integrated quickfix support for Odin (and other similar error formats).
+A simple build runner for Neovim. It saves a project-specific build command to `.run_build/command.txt` and pipes errors into the quickfix list. 
+
+Specifically tuned for languages like Odin that provide multi-line error hints.
 
 ## Features
-- **Project-specific commands**: Saves your build command in a `.run_build/command.txt` file in your root directory.
-- **Silent Mode**: Run builds in the background; errors are automatically filtered and added to the quickfix list.
-- **Buffer Mode**: Run builds in a separate buffer to see full output, with a shortcut to extract errors to the quickfix list.
-- **Smart Quickfix**:
-  - Automatically strips Windows carriage returns (`^M`).
-  - Includes multi-line helper context (code snippets and carets).
-  - Skips helper text when using `:cnext` / `:cprev`.
-  - Clears/closes the quickfix list on successful builds.
+- **Project-specific**: Saves your build command per project directory.
+- **Clean Quickfix**: Automatically strips Windows `^M` carriage returns from output.
+- **Smart Formatting**: Captures multi-line error context (code snippets/carets) but marks them as "invalid" items so `:cnext` skips them correctly.
+- **Flexible output**: Run silently in the background or in a visible split buffer.
 
 ## Installation
 
-Using [lazy.nvim](https://github.com/folke/lazy.nvim):
-
 ```lua
+-- lazy.nvim
 {
-  "YOUR_GITHUB_USERNAME/run-build.nvim",
+  "cmdl-dev/run-build.nvim",
   config = function()
     require("run_build").setup()
     
-    -- Optional: set keymaps
-    vim.keymap.set('n', '<leader>bs', '<cmd>RunBuildSelect<cr>', { desc = '[B]uild [S]elect' })
-    vim.keymap.set('n', '<leader>br', '<cmd>RunBuildSilent<cr>', { desc = '[B]uild [R]un (Silent)' })
-    vim.keymap.set('n', '<leader>bb', '<cmd>RunBuildBuffer<cr>', { desc = '[B]uild [B]uffer' })
+    -- Pick your own keymaps
+    vim.keymap.set('n', '<leader>bs', '<cmd>RunBuildSelect<cr>', { desc = 'Build: Select Command' })
+    vim.keymap.set('n', '<leader>br', '<cmd>RunBuildSilent<cr>', { desc = 'Build: Run (Silent)' })
+    vim.keymap.set('n', '<leader>bb', '<cmd>RunBuildBuffer<cr>', { desc = 'Build: Run (Buffer)' })
   end
 }
 ```
@@ -33,13 +30,14 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 ## Usage
 
 ### Commands
-- `:RunBuildSelect`: Set or update the build command for the current project.
-- `:RunBuildSilent`: Run the build in the background. If errors occur, the quickfix list opens automatically.
-- `:RunBuildBuffer`: Run the build in a vertical split.
+- `:RunBuildSelect`: Set the build command (e.g., `odin build .`).
+- `:RunBuildSilent`: Runs the command in the background. Opens quickfix if it fails, clears/closes it if it passes.
+- `:RunBuildBuffer`: Opens a vertical split showing the live output.
 
-### Keybindings (in Build Output buffer)
-- `<Leader>aq`: Add errors from the current output buffer to the quickfix list.
-- `<Esc>`: Close the output buffer window.
+### In-Buffer Keybinds
+When using `:RunBuildBuffer`, these are available locally:
+- `<Leader>aq`: Filter the current buffer and move error lines to the quickfix list.
+- `<Esc>`: Close the output split.
 
 ## License
 MIT
